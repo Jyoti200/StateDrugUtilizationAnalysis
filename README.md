@@ -17,8 +17,8 @@ By analysing prescription drug data across U.S. states, we found:
 | ----------------------------- | ------------------------------------------------------------------------------------------------- |
 | `DataCollection.py`           | Python script to **automatically download SDUD data** and upload it to a Snowflake warehouse.     |
 | `Text files`                  | SQL queries written and executed in **Snowflake** for data wrangling, cleaning, and aggregations. |
-| `PowerBI_Dashboard.pbix`      | Interactive **Power BI dashboard** to visualize insights from the analyzed data.                  |
-| `README.md`                   | You're reading it!                                                                                |
+| `State_Drug_Utilization.pbix`      | Interactive **Power BI dashboard** to visualize insights from the analyzed data.                  |
+                                                                              |
 
 ---
 
