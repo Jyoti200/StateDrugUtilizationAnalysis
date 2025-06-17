@@ -1,0 +1,37 @@
+--To find the package size inefficiencies
+WITH package_costs AS (
+    SELECT 
+        PRODUCT_NAME
+        ,STATE,
+        CASE 
+            WHEN PACKAGE_SIZE <= 30 THEN 'Small'
+            ELSE 'Large'
+        END AS package_type,
+        SUM(TOTALAMOUNTREIMBURSED) AS total_cost,
+        SUM(UNITSREIMBURSED) AS total_units
+    FROM SUD
+    WHERE SUPPRESSION_USED = FALSE
+    GROUP BY STATE, PRODUCT_NAME,
+             CASE 
+                 WHEN PACKAGE_SIZE <= 30 THEN 'Small'
+                 ELSE 'Large'
+             END
+),
+per_unit_costs AS (
+    SELECT 
+        STATE,
+        PRODUCT_NAME,
+        package_type,
+        ROUND(total_cost / NULLIF(total_units, 0), 2) AS cost_per_unit
+    FROM package_costs
+    WHERE STATE NOT IN ('XX')
+)
+SELECT *
+FROM (
+    SELECT * FROM per_unit_costs
+)
+PIVOT (
+    MAX(cost_per_unit) 
+    FOR package_type IN ('Small', 'Large')
+)
+

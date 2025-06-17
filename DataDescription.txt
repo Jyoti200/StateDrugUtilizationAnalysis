@@ -1,0 +1,70 @@
+//how many nulls exist per key column?
+SELECT 
+  COUNT(*) AS total_rows,
+  COUNT(PACKAGE_SIZE) AS package_size_non_null,
+  COUNT(*) - COUNT(PACKAGE_SIZE) AS package_size_nulls,
+  COUNT(PRODUCT_NAME) AS product_name_non_null,
+  COUNT(*) - COUNT(PRODUCT_NAME) AS product_name_nulls
+FROM STATE_DRUG_UTILIZATION;
+
+//To find the averages by product name
+SELECT PRODUCT_NAME,sum(unitsreimbursed) as total_units_per_product,avg(package_size) as avg_package_size, 
+sum(numberofprescriptions) as total_scripts_per_product,
+avg(medicaidamountreimbursed) as avg_medicaid_amount_per_product FROM SUD
+where suppression_used = false
+group by product_name
+order by total_units_per_product desc 
+
+//In each state what was the most reimbursed medicine in quarter 1?
+WITH RANKED_MEDICINE AS (
+    SELECT STATE, PRODUCT_NAME, SUM(TOTALAMOUNTREIMBURSED) AS TOTAL,
+    ROW_NUMBER() OVER (PARTITION BY STATE ORDER BY sum(totalamountreimbursed) desc) as R
+    FROM SUD
+    WHERE SUPPRESSION_USED = FALSE AND STATE NOT IN ('XX')
+    AND QUARTER=1
+    GROUP BY STATE, PRODUCT_NAME
+)
+SELECT 
+    STATE,
+    PRODUCT_NAME,
+    TOTAL
+FROM RANKED_MEDICINE
+WHERE R = 1
+ORDER BY state;
+
+//Which medicine was most reimbursed under FFSU only?
+SELECT 
+    PRODUCT_NAME, 
+    SUM(TOTALAMOUNTREIMBURSED) AS TOTAL_REIMBURSED
+FROM SUD
+WHERE 
+    SUPPRESSION_USED = FALSE
+    AND UTILIZATION_TYPE = 'FFSU'
+    AND STATE NOT IN ('XX')
+GROUP BY PRODUCT_NAME
+ORDER BY TOTAL_REIMBURSED DESC
+LIMIT 1;
+
+
+//Which medicine was most reimbursed under MCOU only?
+SELECT 
+    PRODUCT_NAME, 
+    SUM(TOTALAMOUNTREIMBURSED) AS TOTAL_REIMBURSED
+FROM SUD
+WHERE 
+    SUPPRESSION_USED = FALSE
+    AND UTILIZATION_TYPE = 'MCOU'
+    AND STATE NOT IN ('XX')
+GROUP BY PRODUCT_NAME
+ORDER BY TOTAL_REIMBURSED DESC
+LIMIT 1;
+
+SELECT 
+  SUM(MEDICAIDAMOUNTREIMBURSED) AS medicaid_reimbursed,
+  SUM(TOTALAMOUNTREIMBURSED - MEDICAIDAMOUNTREIMBURSED) AS non_medicaid_reimbursed,
+  SUM(TOTALAMOUNTREIMBURSED) AS total_reimbursed,
+  ROUND(SUM(MEDICAIDAMOUNTREIMBURSED) / NULLIF(SUM(TOTALAMOUNTREIMBURSED), 0), 4) * 100 AS medicaid_percent,
+  ROUND(SUM(TOTALAMOUNTREIMBURSED - MEDICAIDAMOUNTREIMBURSED) / NULLIF(SUM(TOTALAMOUNTREIMBURSED), 0), 4) * 100 AS non_medicaid_percent
+FROM SUD
+WHERE SUPPRESSION_USED = FALSE
+  AND STATE NOT IN ('XX');

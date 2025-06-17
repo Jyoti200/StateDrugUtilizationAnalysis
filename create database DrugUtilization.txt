@@ -1,0 +1,21 @@
+create database DrugUtilization
+
+CREATE TABLE StateDrug (
+    UtilizationType varchar,
+    State VARCHAR,
+    NDC int,
+    LabelerCode INT,
+    ProductCode INT, 
+    PackageSize	INT, 
+    Year VARCHAR,
+    Quarter	INT, 
+    SuppressionUsed VARCHAR,
+    ProductName VARCHAR,
+    UnitsReimbursed INT, 
+    NumberofPrescriptions FLOAT
+    ,TotalAmountReimbursed FLOAT
+    ,MedicaidAmountReimbursed FLOAT
+    ,NonMedicaidAmountReimbursed FLOAT
+);
+
+Select * from STATEDRUG
